@@ -285,7 +285,7 @@ async def send_split_message(channel, text):
             # Add block syntax if needed, handling empty content edge case
             final_chunk = f"{block_prefix}{chunk_content}{block_suffix}" if in_code_block else chunk_content
             if final_chunk: # Ensure not sending empty string
-                await channel.get_channel(1503853432992305172).send(final_chunk)
+                await channel.send(final_chunk)
                 msg_count += 1
                 if current_pos < len(text): # Delay only if more chunks are coming
                     await asyncio.sleep(0.5)
@@ -696,7 +696,7 @@ def main():
 if __name__ == "__main__":
     main()
 EOF
-msg_pass = "yui_bot.py written."
+msg_pass "yui_bot.py written."
 
 # --- Final Diagnostics ---
 msg_info "Running final checks..."
