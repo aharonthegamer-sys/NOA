@@ -16,8 +16,10 @@ async def on_ready():
     print(f"👑 Bot {bot.user} is live and ready!")
     # טעינת קובץ הפקודות המקורי של האתר שהעתקת (הקובץ bot.py שלך)
     try:
-        from bot import NsfwCog
-        await bot.add_cog(NsfwCog(bot))
+        import bot as user_bot
+        # יצירת מופע של ה-Cog וטעינתו באופן ידני וישיר לליבה
+        cog_instance = user_bot.NsfwCog(bot)
+        await bot.add_cog(cog_instance)
         print("Successfully loaded NsfwCog from your file!")
     except Exception as e:
         print(f"Error loading your file: {e}")
@@ -26,6 +28,7 @@ async def on_ready():
 def run_health_server():
     server = HTTPServer(('0.0.0.0', int(os.environ.get("PORT", 8080))), SimpleHTTPRequestHandler)
     server.serve_forever()
+
 if __name__ == "__main__":
     threading.Thread(target=run_health_server, daemon=True).start()
     token = os.environ.get("DISCORD_TOKEN")
