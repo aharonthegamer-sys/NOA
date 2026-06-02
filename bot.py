@@ -1,85 +1,493 @@
+from discord.ext import commands
+from discord import Embed as AkagiEmbed
+from AkagiModules.Config.Config import reddit_client_id as RedditAkagiClientID
+from AkagiModules.Config.Config import reddit_client_secret as RedditAkagiClientSecret
+from AkagiModules.Config.Config import reddit_user_agent as RedditAkagiUserAgent
 import discord
-from discord.ext import tasks
+import datetime
 import aiohttp
-import os
 import random
-import threading
-from http.server import SimpleHTTPRequestHandler, HTTPServer
+import praw
 
-intents = discord.Intents.default()
-client = discord.Client(intents=intents)
+reddit = praw.Reddit(client_id=RedditAkagiClientID,
+                     client_secret=RedditAkagiClientSecret,
+                     user_agent=RedditAkagiUserAgent, check_for_async=False)
 
-# מזהה החדר המדויק שלך מהתמונות
-CHANNEL_ID = 1503853432992305172
+class NsfwCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
 
-# משימה מחזורית שרצה כל 45 שניות (קצב בטוח ויציב לענן שמונע חסימות)
-@tasks.loop(seconds=45)
-async def send_nsfw_video():
-    channel = client.get_channel(CHANNEL_ID)
-    if not channel or not channel.is_nsfw():
-        return
+    @commands.command(no_pm=True)
+    @commands.is_nsfw()
+    async def pawg(self, ctx):
+        subreddit = reddit.subreddit('pawg')
+        all_subs = []		
+        top = subreddit.top(limit=5)
+        for submission in top:
+           all_subs.append(submission)			
+        random_sub = random.choice(all_subs)		   
 
-    # פנייה ל-API הרשמי והפתוח של Gelbooru (מאגר המדיה של הבוטים המוכרים)
-    # השאילתה מבקשת סרטונים מונפשים בלבד (animated) תחת קטגוריית מבוגרים (explicit)
-    url = "https://gelbooru.com"
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-    }
+        name = random_sub.title		
+        url = random_sub.url
+        embed = AkagiEmbed(title=f"Pawg!",
+                               description=f'[*{name}*]({url})',
+                               timestamp=datetime.datetime.utcnow(),
+                               color=discord.Color.red())
+        embed.set_image(url=url)
+        embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
+        embed.set_footer(text="{}".format(ctx.author.display_name),
+                         icon_url=ctx.author.avatar_url)
+        (embed=embed)
 
-    async with aiohttp.ClientSession(headers=headers) as session:
-        try:
-            async with session.get(url) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    posts = data.get("post", [])
-                    
-                    if posts:
-                        # בחירת פוסט אקראי מתוך תוצאות המאגר החי
-                        random_post = random.choice(posts)
-                        file_url = random_post.get("file_url", "")
-                        
-                        # וידוא שהקובץ הוא סרטון MP4 או WebM ישיר
-                        if file_url and file_url.endswith(('.mp4', '.webm')):
-                            # שליחת הקישור הישיר - דיסקורד מזהה את המדיה ופותח נגן וידאו (Play) מובנה וחלק בצאט!
-                            await channel.send(file_url)
-                            print(f"[Booru-Engine] Video player successfully sent to channel {CHANNEL_ID}")
-                else:
-                    print(f"[Booru-Engine] API Server Error: {response.status}")
-        except Exception as e:
-            print(f"[Booru-Engine] Connection or processing error: {e}")
+    @pawg.error
+    async def pawg_error_handler(self, ctx, error):
+        if isinstance(error, commands.NSFWChannelRequired):
+            embed = AkagiEmbed(
+                title=f"Error",
+                description='*This command is Only for NSFW Channels!*',
+                timestamp=datetime.datetime.utcnow(),
+                color=discord.Color.red())
+            embed.set_author(name=ctx.me.display_name,
+                             icon_url=ctx.me.avatar_url)
+            embed.set_footer(text="{}".format(ctx.author.display_name),
+                             icon_url=ctx.author.avatar_url)
+            return (embed=embed)
 
-@client.event
-async def on_ready():
-    print(f"Bot {client.user} is online and fully authenticated using Booru-Core!")
+    @commands.command(no_pm=True)
+    @commands.is_nsfw()
+    async def ass(self, ctx):
+        subreddit = reddit.subreddit('ass')
+        all_subs = []		
+        top = subreddit.top(limit=5)
+        for submission in top:
+           all_subs.append(submission)			
+        random_sub = random.choice(all_subs)		   
+
+        name = random_sub.title		
+        url = random_sub.url
+        embed = AkagiEmbed(title=f"Ass!",
+                               description=f'[*{name}*]({url})',
+                               timestamp=datetime.datetime.utcnow(),
+                               color=discord.Color.red())
+        embed.set_image(url=url)
+        embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
+        embed.set_footer(text="{}".format(ctx.author.display_name),
+                         icon_url=ctx.author.avatar_url)
+        (embed=embed)
+
+    @ass.error
+    async def ass_error_handler(self, ctx, error):
+        if isinstance(error, commands.NSFWChannelRequired):
+            embed = AkagiEmbed(
+                title=f"Error",
+                description='*This command is Only for NSFW Channels!*',
+                timestamp=datetime.datetime.utcnow(),
+                color=discord.Color.red())
+            embed.set_author(name=ctx.me.display_name,
+                             icon_url=ctx.me.avatar_url)
+            embed.set_footer(text="{}".format(ctx.author.display_name),
+                             icon_url=ctx.author.avatar_url)
+            return (embed=embed)
     
-    channel = client.get_channel(CHANNEL_ID)
-    if channel:
-        try:
-            await channel.send("👑 **ליבת ה-Booru המקצועית (בסגנון Lawliet/Yandere) הופעלה ב-NOA! הזרמת הנגנים מתחילה...**")
-        except Exception as e:
-            print(f"Startup prompt failed: {e}")
+    @commands.command(no_pm=True)
+    @commands.is_nsfw()
+    async def pussy(self, ctx):
+        subreddit = reddit.subreddit('pussy')
+        all_subs = []		
+        top = subreddit.top(limit=5)
+        for submission in top:
+           all_subs.append(submission)			
+        random_sub = random.choice(all_subs)		   
+
+        name = random_sub.title		
+        url = random_sub.url
+        embed = AkagiEmbed(title=f"Pussy!",
+                               description=f'[*{name}*]({url})',
+                               timestamp=datetime.datetime.utcnow(),
+                               color=discord.Color.red())
+        embed.set_image(url=url)
+        embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
+        embed.set_footer(text="{}".format(ctx.author.display_name),
+                         icon_url=ctx.author.avatar_url)
+                await client.get_channel(1503853432992305172).send(embed=embed)
+
+    @pussy.error
+    async def pussy_error_handler(self, ctx, error):
+        if isinstance(error, commands.NSFWChannelRequired):
+            embed = AkagiEmbed(
+                title=f"Error",
+                description='*This command is Only for NSFW Channels!*',
+                timestamp=datetime.datetime.utcnow(),
+                color=discord.Color.red())
+            embed.set_author(name=ctx.me.display_name,
+                             icon_url=ctx.me.avatar_url)
+            embed.set_footer(text="{}".format(ctx.author.display_name),
+                             icon_url=ctx.author.avatar_url)
+            return (embed=embed)
+    
+    @commands.command(no_pm=True)
+    @commands.is_nsfw()
+    async def boobs(self, ctx):
+        subreddit = reddit.subreddit('boobs')
+        all_subs = []		
+        top = subreddit.top(limit=5)
+        for submission in top:
+           all_subs.append(submission)			
+        random_sub = random.choice(all_subs)		   
+
+        name = random_sub.title		
+        url = random_sub.url
+        embed = AkagiEmbed(title=f"Boobs!",
+                               description=f'[*{name}*]({url})',
+                               timestamp=datetime.datetime.utcnow(),
+                               color=discord.Color.red())
+        embed.set_image(url=url)
+        embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
+        embed.set_footer(text="{}".format(ctx.author.display_name),
+                         icon_url=ctx.author.avatar_url)
+        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+
+    @boobs.error
+    async def boobs_error_handler(self, ctx, error):
+        if isinstance(error, commands.NSFWChannelRequired):
+            embed = AkagiEmbed(
+                title=f"Error",
+                description='*This command is Only for NSFW Channels!*',
+                timestamp=datetime.datetime.utcnow(),
+                color=discord.Color.red())
+            embed.set_author(name=ctx.me.display_name,
+                             icon_url=ctx.me.avatar_url)
+            embed.set_footer(text="{}".format(ctx.author.display_name),
+                             icon_url=ctx.author.avatar_url)
+            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+    
+    @commands.command(no_pm=True)
+    @commands.is_nsfw()
+    async def bdsm(self, ctx):
+        subreddit = reddit.subreddit('bdsm')
+        all_subs = []		
+        top = subreddit.top(limit=5)
+        for submission in top:
+           all_subs.append(submission)			
+        random_sub = random.choice(all_subs)		   
+
+        name = random_sub.title		
+        url = random_sub.url
+        embed = AkagiEmbed(title=f"Bdsm!",
+                               description=f'[*{name}*]({url})',
+                               timestamp=datetime.datetime.utcnow(),
+                               color=discord.Color.red())
+        embed.set_image(url=url)
+        embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
+        embed.set_footer(text="{}".format(ctx.author.display_name),
+                         icon_url=ctx.author.avatar_url)
+        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+
+    @bdsm.error
+    async def bdsm_error_handler(self, ctx, error):
+        if isinstance(error, commands.NSFWChannelRequired):
+            embed = AkagiEmbed(
+                title=f"Error",
+                description='*This command is Only for NSFW Channels!*',
+                timestamp=datetime.datetime.utcnow(),
+                color=discord.Color.red())
+            embed.set_author(name=ctx.me.display_name,
+                             icon_url=ctx.me.avatar_url)
+            embed.set_footer(text="{}".format(ctx.author.display_name),
+                             icon_url=ctx.author.avatar_url)
+            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+    
+    @commands.command(no_pm=True)
+    @commands.is_nsfw()
+    async def kinky(self, ctx):
+        subreddit = reddit.subreddit('kinky')
+        all_subs = []		
+        top = subreddit.top(limit=5)
+        for submission in top:
+           all_subs.append(submission)			
+        random_sub = random.choice(all_subs)		   
+
+        name = random_sub.title		
+        url = random_sub.url
+        embed = AkagiEmbed(title=f"Kinky!",
+                               description=f'[*{name}*]({url})',
+                               timestamp=datetime.datetime.utcnow(),
+                               color=discord.Color.red())
+        embed.set_image(url=url)
+        embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
+        embed.set_footer(text="{}".format(ctx.author.display_name),
+                         icon_url=ctx.author.avatar_url)
+        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+
+    @kinky.error
+    async def kinky_error_handler(self, ctx, error):
+        if isinstance(error, commands.NSFWChannelRequired):
+            embed = AkagiEmbed(
+                title=f"Error",
+                description='*This command is Only for NSFW Channels!*',
+                timestamp=datetime.datetime.utcnow(),
+                color=discord.Color.red())
+            embed.set_author(name=ctx.me.display_name,
+                             icon_url=ctx.me.avatar_url)
+            embed.set_footer(text="{}".format(ctx.author.display_name),
+                             icon_url=ctx.author.avatar_url)
+            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+    
+    @commands.command(no_pm=True)
+    @commands.is_nsfw()
+    async def collared(self, ctx):
+        subreddit = reddit.subreddit('collared')
+        all_subs = []		
+        top = subreddit.top(limit=5)
+        for submission in top:
+           all_subs.append(submission)			
+        random_sub = random.choice(all_subs)		   
+
+        name = random_sub.title		
+        url = random_sub.url
+        embed = AkagiEmbed(title=f"Collared!",
+                               description=f'[*{name}*]({url})',
+                               timestamp=datetime.datetime.utcnow(),
+                               color=discord.Color.red())
+        embed.set_image(url=url)
+        embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
+        embed.set_footer(text="{}".format(ctx.author.display_name),
+                         icon_url=ctx.author.avatar_url)
+        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+
+    @collared.error
+    async def collared_error_handler(self, ctx, error):
+        if isinstance(error, commands.NSFWChannelRequired):
+            embed = AkagiEmbed(
+                title=f"Error",
+                description='*This command is Only for NSFW Channels!*',
+                timestamp=datetime.datetime.utcnow(),
+                color=discord.Color.red())
+            embed.set_author(name=ctx.me.display_name,
+                             icon_url=ctx.me.avatar_url)
+            embed.set_footer(text="{}".format(ctx.author.display_name),
+                             icon_url=ctx.author.avatar_url)
+            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+    
+    @commands.command(no_pm=True)
+    @commands.is_nsfw()
+    async def bottomless(self, ctx):
+        subreddit = reddit.subreddit('Bottomless')
+        all_subs = []		
+        top = subreddit.top(limit=5)
+        for submission in top:
+           all_subs.append(submission)			
+        random_sub = random.choice(all_subs)		   
+
+        name = random_sub.title		
+        url = random_sub.url
+        embed = AkagiEmbed(title=f"Bottomless!",
+                               description=f'[*{name}*]({url})',
+                               timestamp=datetime.datetime.utcnow(),
+                               color=discord.Color.red())
+        embed.set_image(url=url)
+        embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
+        embed.set_footer(text="{}".format(ctx.author.display_name),
+                         icon_url=ctx.author.avatar_url)
+        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+
+    @bottomless.error
+    async def bottomless_error_handler(self, ctx, error):
+        if isinstance(error, commands.NSFWChannelRequired):
+            embed = AkagiEmbed(
+                title=f"Error",
+                description='*This command is Only for NSFW Channels!*',
+                timestamp=datetime.datetime.utcnow(),
+                color=discord.Color.red())
+            embed.set_author(name=ctx.me.display_name,
+                             icon_url=ctx.me.avatar_url)
+            embed.set_footer(text="{}".format(ctx.author.display_name),
+                             icon_url=ctx.author.avatar_url)
+            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+    
+    @commands.command(no_pm=True)
+    @commands.is_nsfw()
+    async def dick(self, ctx):
+        subreddit = reddit.subreddit('penis')
+        all_subs = []		
+        top = subreddit.top(limit=5)
+        for submission in top:
+           all_subs.append(submission)			
+        random_sub = random.choice(all_subs)		   
+
+        name = random_sub.title		
+        url = random_sub.url
+        embed = AkagiEmbed(title=f"Dick!",
+                               description=f'[*{name}*]({url})',
+                               timestamp=datetime.datetime.utcnow(),
+                               color=discord.Color.red())
+        embed.set_image(url=url)
+        embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
+        embed.set_footer(text="{}".format(ctx.author.display_name),
+                         icon_url=ctx.author.avatar_url)
+        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+
+    @dick.error
+    async def dick_error_handler(self, ctx, error):
+        if isinstance(error, commands.NSFWChannelRequired):
+            embed = AkagiEmbed(
+                title=f"Error",
+                description='*This command is Only for NSFW Channels!*',
+                timestamp=datetime.datetime.utcnow(),
+                color=discord.Color.red())
+            embed.set_author(name=ctx.me.display_name,
+                             icon_url=ctx.me.avatar_url)
+            embed.set_footer(text="{}".format(ctx.author.display_name),
+                             icon_url=ctx.author.avatar_url)
+            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
             
-    if not send_nsfw_video.is_running():
-        send_nsfw_video.start()
+    @commands.command(no_pm=True)
+    @commands.is_nsfw()
+    async def redhead(self, ctx):
+        subreddit = reddit.subreddit('redhead')
+        all_subs = []		
+        top = subreddit.top(limit=5)
+        for submission in top:
+           all_subs.append(submission)			
+        random_sub = random.choice(all_subs)		   
 
-# שרת רשת מובנה (Health Check) חובה עבור Render כדי שהבוט לא ייכבה בתוכנית החינמית
-def run_health_server():
-    class HealthHandler(SimpleHTTPRequestHandler):
-        def do_GET(self):
-            self.send_response(200)
-            self.send_header("Content-type", "text/html")
-            self.end_headers()
-            self.wfile.write(b"Bot Engine Live and Operational")
+        name = random_sub.title		
+        url = random_sub.url
+        embed = AkagiEmbed(title=f"Redhead!",
+                               description=f'[*{name}*]({url})',
+                               timestamp=datetime.datetime.utcnow(),
+                               color=discord.Color.red())
+        embed.set_image(url=url)
+        embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
+        embed.set_footer(text="{}".format(ctx.author.display_name),
+                         icon_url=ctx.author.avatar_url)
+        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
-    port = int(os.environ.get("PORT", 8080))
-    server = HTTPServer(('0.0.0.0', port), HealthHandler)
-    server.serve_forever()
+    @redhead.error
+    async def redhead_error_handler(self, ctx, error):
+        if isinstance(error, commands.NSFWChannelRequired):
+            embed = AkagiEmbed(
+                title=f"Error",
+                description='*This command is Only for NSFW Channels!*',
+                timestamp=datetime.datetime.utcnow(),
+                color=discord.Color.red())
+            embed.set_author(name=ctx.me.display_name,
+                             icon_url=ctx.me.avatar_url)
+            embed.set_footer(text="{}".format(ctx.author.display_name),
+                             icon_url=ctx.author.avatar_url)
+            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            
+    @commands.command(no_pm=True)
+    @commands.is_nsfw()
+    async def chubby(self, ctx):
+        subreddit = reddit.subreddit('chubby')
+        all_subs = []		
+        top = subreddit.top(limit=5)
+        for submission in top:
+           all_subs.append(submission)			
+        random_sub = random.choice(all_subs)		   
 
-if __name__ == "__main__":
-    threading.Thread(target=run_health_server, daemon=True).start()
-    
-    token = os.environ.get("DISCORD_TOKEN")
-    if token:
-        client.run(token)
-    else:
-        print("Error: DISCORD_TOKEN variable is missing.")
+        name = random_sub.title		
+        url = random_sub.url
+        embed = AkagiEmbed(title=f"Chubby!",
+                               description=f'[*{name}*]({url})',
+                               timestamp=datetime.datetime.utcnow(),
+                               color=discord.Color.red())
+        embed.set_image(url=url)
+        embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
+        embed.set_footer(text="{}".format(ctx.author.display_name),
+                         icon_url=ctx.author.avatar_url)
+        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+
+    @chubby.error
+    async def chubby_error_handler(self, ctx, error):
+        if isinstance(error, commands.NSFWChannelRequired):
+            embed = AkagiEmbed(
+                title=f"Error",
+                description='*This command is Only for NSFW Channels!*',
+                timestamp=datetime.datetime.utcnow(),
+                color=discord.Color.red())
+            embed.set_author(name=ctx.me.display_name,
+                             icon_url=ctx.me.avatar_url)
+            embed.set_footer(text="{}".format(ctx.author.display_name),
+                             icon_url=ctx.author.avatar_url)
+            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            
+    @commands.command(no_pm=True)
+    @commands.is_nsfw()
+    async def nsfw(self, ctx):
+        subreddit = reddit.subreddit('nsfw')
+        all_subs = []		
+        top = subreddit.top(limit=5)
+        for submission in top:
+           all_subs.append(submission)			
+        random_sub = random.choice(all_subs)		   
+
+        name = random_sub.title		
+        url = random_sub.url
+        embed = AkagiEmbed(title=f"Random Nsfw!",
+                               description=f'[*{name}*]({url})',
+                               timestamp=datetime.datetime.utcnow(),
+                               color=discord.Color.red())
+        embed.set_image(url=url)
+        embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
+        embed.set_footer(text="{}".format(ctx.author.display_name),
+                         icon_url=ctx.author.avatar_url)
+        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+
+    @nsfw.error
+    async def nsfw_error_handler(self, ctx, error):
+        if isinstance(error, commands.NSFWChannelRequired):
+            embed = AkagiEmbed(
+                title=f"Error",
+                description='*This command is Only for NSFW Channels!*',
+                timestamp=datetime.datetime.utcnow(),
+                color=discord.Color.red())
+            embed.set_author(name=ctx.me.display_name,
+                             icon_url=ctx.me.avatar_url)
+            embed.set_footer(text="{}".format(ctx.author.display_name),
+                             icon_url=ctx.author.avatar_url)
+            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            
+    @commands.command(no_pm=True)
+    @commands.is_nsfw()
+    async def hentai(self, ctx):
+        subreddit = reddit.subreddit('hentai')
+        all_subs = []		
+        top = subreddit.top(limit=5)
+        for submission in top:
+           all_subs.append(submission)			
+        random_sub = random.choice(all_subs)		   
+
+        name = random_sub.title		
+        url = random_sub.url
+        embed = AkagiEmbed(title=f"Random Hentai!",
+                               description=f'[*{name}*]({url})',
+                               timestamp=datetime.datetime.utcnow(),
+                               color=discord.Color.red())
+        embed.set_image(url=url)
+        embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
+        embed.set_footer(text="{}".format(ctx.author.display_name),
+                         icon_url=ctx.author.avatar_url)
+        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+
+    @hentai.error
+    async def nsfw_error_handler(self, ctx, error):
+        if isinstance(error, commands.NSFWChannelRequired):
+            embed = AkagiEmbed(
+                title=f"Error",
+                description='*This command is Only for NSFW Channels!*',
+                timestamp=datetime.datetime.utcnow(),
+                color=discord.Color.red())
+            embed.set_author(name=ctx.me.display_name,
+                             icon_url=ctx.me.avatar_url)
+            embed.set_footer(text="{}".format(ctx.author.display_name),
+                             icon_url=ctx.author.avatar_url)
+            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+
+    async def on_message(self, message):
+        print(message.content)
+
+
+def setup(bot):
+    bot.add_cog(NsfwCog(bot))
