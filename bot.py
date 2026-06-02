@@ -7,36 +7,7 @@ import discord
 import datetime
 import aiohttp
 import random
-import praw 
-from discord.ext import tasks
-# לופ אוטומטי שרץ בכל 20 שניות ושולח קליפים ישירות לחדר שלך
-@tasks.loop(seconds=20)
-async def auto_nsfw_stream():
-    await client.wait_until_ready()
-    channel = client.get_channel(1503853432992305172)
-    if not channel or not channel.is_nsfw():
-        return
-        
-    url = "https://nekobot.xyz"
-    async with aiohttp.ClientSession() as session:
-        try:
-            async with session.get(url) as response:
-                if response.status == 200:
-                    data = await response.json()
-                    file_url = data.get("message", "")
-                    if file_url:
-                        await channel.send(file_url)
-                        print("Auto video sent successfully!")
-        except Exception as e:
-            print(f"Error: {e}")
-
-# פקודה שמפעילה את הלופ אוטומטית ברגע שהבוט מתחבר
-@client.event
-async def on_ready():
-    print(f"Bot {client.user} is live and auto-streaming!")
-    if not auto_nsfw_stream.is_running():
-        auto_nsfw_stream.start()
-
+import praw
 
 reddit = praw.Reddit(client_id=RedditAkagiClientID,
                      client_secret=RedditAkagiClientSecret,
@@ -66,7 +37,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        (embed=embed)
+        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @pawg.error
     async def pawg_error_handler(self, ctx, error):
@@ -80,7 +51,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return (embed=embed)
+            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @commands.command(no_pm=True)
     @commands.is_nsfw()
@@ -102,7 +73,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        (embed=embed)
+        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @ass.error
     async def ass_error_handler(self, ctx, error):
@@ -116,7 +87,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return (embed=embed)
+            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
     
     @commands.command(no_pm=True)
     @commands.is_nsfw()
@@ -138,7 +109,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-                await client.get_channel(1503853432992305172).send(embed=embed)
+        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @pussy.error
     async def pussy_error_handler(self, ctx, error):
@@ -152,7 +123,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return (embed=embed)
+            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
     
     @commands.command(no_pm=True)
     @commands.is_nsfw()
