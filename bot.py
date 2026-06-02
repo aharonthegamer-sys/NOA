@@ -1,4 +1,6 @@
 from discord.ext import commands
+intents = discord.Intents.default()
+client = commands.Bot(command_prefix='!', intents=intents)
 from discord import Embed as AkagiEmbed
 from AkagiModules.Config.Config import reddit_client_id as RedditAkagiClientID
 from AkagiModules.Config.Config import reddit_client_secret as RedditAkagiClientSecret
