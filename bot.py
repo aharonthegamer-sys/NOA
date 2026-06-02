@@ -1,6 +1,4 @@
 from discord.ext import commands
-intents = discord.Intents.default()
-client = commands.Bot(command_prefix='!', intents=intents)
 from discord import Embed as AkagiEmbed
 from AkagiModules.Config.Config import reddit_client_id as RedditAkagiClientID
 from AkagiModules.Config.Config import reddit_client_secret as RedditAkagiClientSecret
@@ -39,7 +37,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+        await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @pawg.error
     async def pawg_error_handler(self, ctx, error):
@@ -53,7 +51,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            return await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @commands.command(no_pm=True)
     @commands.is_nsfw()
@@ -75,7 +73,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+        await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @ass.error
     async def ass_error_handler(self, ctx, error):
@@ -89,7 +87,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            return await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
     
     @commands.command(no_pm=True)
     @commands.is_nsfw()
@@ -111,7 +109,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+        await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @pussy.error
     async def pussy_error_handler(self, ctx, error):
@@ -125,7 +123,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            return await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
     
     @commands.command(no_pm=True)
     @commands.is_nsfw()
@@ -147,7 +145,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+        await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @boobs.error
     async def boobs_error_handler(self, ctx, error):
@@ -161,7 +159,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            return await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
     
     @commands.command(no_pm=True)
     @commands.is_nsfw()
@@ -183,7 +181,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+        await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @bdsm.error
     async def bdsm_error_handler(self, ctx, error):
@@ -197,7 +195,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            return await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
     
     @commands.command(no_pm=True)
     @commands.is_nsfw()
@@ -219,7 +217,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+        await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @kinky.error
     async def kinky_error_handler(self, ctx, error):
@@ -233,7 +231,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            return await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
     
     @commands.command(no_pm=True)
     @commands.is_nsfw()
@@ -255,7 +253,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+        await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @collared.error
     async def collared_error_handler(self, ctx, error):
@@ -269,7 +267,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            return await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
     
     @commands.command(no_pm=True)
     @commands.is_nsfw()
@@ -291,7 +289,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+        await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @bottomless.error
     async def bottomless_error_handler(self, ctx, error):
@@ -305,7 +303,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            return await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
     
     @commands.command(no_pm=True)
     @commands.is_nsfw()
@@ -327,7 +325,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+        await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @dick.error
     async def dick_error_handler(self, ctx, error):
@@ -341,7 +339,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            return await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
             
     @commands.command(no_pm=True)
     @commands.is_nsfw()
@@ -363,7 +361,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+        await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @redhead.error
     async def redhead_error_handler(self, ctx, error):
@@ -377,7 +375,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            return await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
             
     @commands.command(no_pm=True)
     @commands.is_nsfw()
@@ -399,7 +397,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+        await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @chubby.error
     async def chubby_error_handler(self, ctx, error):
@@ -413,7 +411,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            return await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
             
     @commands.command(no_pm=True)
     @commands.is_nsfw()
@@ -435,7 +433,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+        await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @nsfw.error
     async def nsfw_error_handler(self, ctx, error):
@@ -449,7 +447,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            return await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
             
     @commands.command(no_pm=True)
     @commands.is_nsfw()
@@ -471,7 +469,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+        await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     @hentai.error
     async def nsfw_error_handler(self, ctx, error):
@@ -485,7 +483,7 @@ class NsfwCog(commands.Cog):
                              icon_url=ctx.me.avatar_url)
             embed.set_footer(text="{}".format(ctx.author.display_name),
                              icon_url=ctx.author.avatar_url)
-            return await client.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+            return await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
 
     async def on_message(self, message):
         print(message.content)
