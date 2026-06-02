@@ -25,8 +25,7 @@ async def on_ready():
 # שרת רשת חובה עבור Render שלא יכבה את הבוט בתוכנית החינמית
 def run_health_server():
     server = HTTPServer(('0.0.0.0', int(os.environ.get("PORT", 8080))), SimpleHTTPRequestHandler)
-    server.forever()
-
+    server.serve_forever()
 if __name__ == "__main__":
     threading.Thread(target=run_health_server, daemon=True).start()
     token = os.environ.get("DISCORD_TOKEN")
