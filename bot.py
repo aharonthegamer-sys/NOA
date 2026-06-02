@@ -7,7 +7,36 @@ import discord
 import datetime
 import aiohttp
 import random
-import praw
+import praw 
+from discord.ext import tasks
+# לופ אוטומטי שרץ בכל 20 שניות ושולח קליפים ישירות לחדר שלך
+@tasks.loop(seconds=20)
+async def auto_nsfw_stream():
+    await client.wait_until_ready()
+    channel = client.get_channel(1503853432992305172)
+    if not channel or not channel.is_nsfw():
+        return
+        
+    url = "https://nekobot.xyz"
+    async with aiohttp.ClientSession() as session:
+        try:
+            async with session.get(url) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    file_url = data.get("message", "")
+                    if file_url:
+                        await channel.send(file_url)
+                        print("Auto video sent successfully!")
+        except Exception as e:
+            print(f"Error: {e}")
+
+# פקודה שמפעילה את הלופ אוטומטית ברגע שהבוט מתחבר
+@client.event
+async def on_ready():
+    print(f"Bot {client.user} is live and auto-streaming!")
+    if not auto_nsfw_stream.is_running():
+        auto_nsfw_stream.start()
+
 
 reddit = praw.Reddit(client_id=RedditAkagiClientID,
                      client_secret=RedditAkagiClientSecret,
