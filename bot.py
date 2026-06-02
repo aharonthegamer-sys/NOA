@@ -40,7 +40,7 @@ class NsfwCog(commands.Cog):
         embed.set_author(name=ctx.me.display_name, icon_url=ctx.me.avatar_url)
         embed.set_footer(text="{}".format(ctx.author.display_name),
                          icon_url=ctx.author.avatar_url)
-        await self.bot.get_channel(1503853432992305172).send(embed=embed)(embed=embed)
+           await self.bot.get_channel(1503853432992305172).send(embed=embed)
 
     @pawg.error
     async def pawg_error_handler(self, ctx, error):
