@@ -1,8 +1,9 @@
 import discord
 from discord.ext import commands
 import requests
+import os
 
-token = "DISCORD_TOKEN"
+token = os.getenv("DISCORD_TOKEN")
 prefix = "?"
 intents = discord.Intents.all()
 client = commands.Bot(command_prefix=prefix, intents=intents)
