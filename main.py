@@ -93,15 +93,19 @@ async def nsfw(ctx, category: str = None):
         await ctx.send(f"❌ בחר קטגוריה תקינה מהרשימה: {', '.join(valid_categories)}")
         return
 
-    url = f"https://purrbot.site{category}/gif"
+            url = f"https://purrbot.site{category}/gif"
+    headers = {"User-Agent": "Mozilla/5.0"}
     
     try:
-        response = requests.get(url).json()
+        response = requests.get(url, headers=headers).json()
         image_url = response.get("link")
         
         embed = discord.Embed(title=f"🔥 קטגוריית NOA: {category.upper()}", color=0xff0055)
         embed.set_image(url=image_url)
         await ctx.send(embed=embed)
+    except Exception as e:
+        await ctx.send(f"❌ תקלה במשיכת המדיה. שגיאה: {str(e)}")
+
     except:
         await ctx.send("❌ תקלה במשיכת המדיה מהאתר, נסה שוב.")
 
