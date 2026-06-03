@@ -106,7 +106,6 @@ try:
 except Exception as e:
  await ctx.send(f"❌ תקלה במשיכת המדיה. שגיאה: {str(e)}")
 
- except:
- await ctx.send("❌ תקלה במשיכת המדיה מהאתר, נסה שוב.")
+ 
 
  client.run(token)
