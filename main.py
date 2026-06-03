@@ -4,8 +4,9 @@ import requests
 
 token = "DISCORD_TOKEN"
 prefix = "?"
+intents = discord.Intents.all()
+client = commands.Bot(command_prefix=prefix, intents=intents)
 
-client = commands.Bot(command_prefix= prefix)
 client.remove_command("help") #to remove the default boring help command
 
 
