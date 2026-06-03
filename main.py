@@ -2,6 +2,19 @@ import discord
 from discord.ext import commands, tasks
 import requests
 import os
+from flask import Flask
+from threading import Thread
+
+# שרת מזויף בשביל לעקוף את חסימת הפורט של רנדר בחינם
+app = Flask('')
+@app.route('/')
+def home():
+    return "Bot is alive!"
+
+def run_flask():
+    app.run(host='0.0.0.0', port=10000)
+
+Thread(target=run_flask).start()
 
 token = os.getenv("DISCORD_TOKEN")
 prefix = "?"
@@ -11,13 +24,10 @@ client = commands.Bot(command_prefix=prefix, intents=intents)
 @client.event
 async def on_ready():
     print(f"Logged in as {client.user.name}")
-    # הפעלת הלולאה האוטומטית ברגע שהבוט נדלק
     auto_real_videos.start()
 
-# משימה אוטומטית שרצה כל 10 דקות ושולחת סרטון/תמונה אמיתיים מ-Reddit
 @tasks.loop(minutes=10)
 async def auto_real_videos():
-    # הבוט יחפש ערוץ בשם videos בשרת שלך וישלח אליו אוטומטית
     for guild in client.guilds:
         channel = discord.utils.get(guild.text_channels, name="videos")
         if channel and channel.is_nsfw():
@@ -25,7 +35,7 @@ async def auto_real_videos():
             headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
             try:
                 response = requests.get(url, headers=headers).json()
-                post_data = response[0]["data"]["children"][0]["data"]
+                post_data = response["data"]["children"]["data"]
                 video_url = post_data.get("url")
                 title = post_data.get("title", "Real IRL Media")
                 
