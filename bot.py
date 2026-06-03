@@ -695,16 +695,6 @@ def main():
 
 if __name__ == "__main__":
     main()
-EOF
-msg_pass = "yui_bot.py written."
-msg_info = "Running final checks..."
-# --- Final Diagnostics ---
-msg_info = "Running final checks..."
-FINAL_CHECK_FAIL=0
-
-# Check Python syntax
-msg_info "Checking Python syntax..."
-if ! python3 -m py_compile yui_bot.py; then
     msg_error "Syntax error in yui_bot.py"
     FINAL_CHECK_FAIL=1
 fi
