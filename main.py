@@ -97,12 +97,12 @@ url = f"https://purrbot.site/api/img/nsfw/{category}/gif"
 headers = {"User-Agent": "Mozilla/5.0"}
     
 try:
-response = requests.get(url, headers=headers).json()
-image_url = response.get("link")
+ response = requests.get(url, headers=headers).json()
+ image_url = response.get("link")
         
-embed = discord.Embed(title=f"🔥 קטגוריית NOA: {category.upper()}", color=0xff0055)
-embed.set_image(url=image_url)
-await ctx.send(embed=embed)
+ embed = discord.Embed(title=f"🔥 קטגוריית NOA: {category.upper()}", color=0xff0055)
+ embed.set_image(url=image_url)
+ await ctx.send(embed=embed)
 except Exception as e:
 await ctx.send(f"❌ תקלה במשיכת המדיה. שגיאה: {str(e)}")
 
