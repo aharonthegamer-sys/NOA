@@ -107,38 +107,31 @@ async def nsfw(ctx, category: str = None):
         await ctx.send(f"❌ תקלה: {str(e)}")
 
  
-    @client.command(name="real")
+        @client.command(name="real")
     async def real(ctx):
         if not ctx.channel.is_nsfw():
             await ctx.send("❌ ניתן להשתמש בפקודה זו רק בערוצים המסומנים כ-NSFW!")
             return
 
+        # פנייה ישירה לצינור הפתוח של Reddit לשליפת סרטון או תמונה אמיתיים
+        url = "https://reddit.com"
+        headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"}
+        
         try:
-            # שלב 1: משיכת מפתח גישה זמני (Token) מהאתר
-            token_url = "https://redgifs.com"
-            token_res = requests.get(token_url).json()
-            access_token = token_res.get("token")
+            response = requests.get(url, headers=headers).json()
+            # Reddit מחזיר רשימה, אנחנו שולפים את הפוסט האקראי
+            post_data = response[0]["data"]["children"][0]["data"]
             
-            # שלב 2: חיפוש סרטון אמיתי מלא באמצעות המפתח שקיבלנו
-            search_url = "https://redgifs.com"
-            headers = {
-                "User-Agent": "Mozilla/5.0",
-                "Authorization": f"Bearer {access_token}"
-            }
+            video_url = post_data.get("url")
+            title = post_data.get("title", "Real IRL Media")
             
-            response = requests.get(search_url, headers=headers).json()
-            gifs = response.get("gifs", [])
-            
-            if not gifs:
-                await ctx.send("❌ לא נמצאו סרטונים כרגע, נסה שוב.")
+            if not video_url:
+                await ctx.send("❌ לא נמצאה מדיה, נסה שוב.")
                 return
                 
-            # שלב 3: שליפת מזהה הוידאו ובניית קישור לנגן מלא
-            video_id = gifs[0].get("id")
-            video_url = f"https://www.redgifs.com/watch/{video_id}"
-            
-            await ctx.send(f"🔥 **סרטון אמיתי (IRL) מלא מבית NOA:**\n{video_url}")
+            # שליחת הקישור ישירות לצ'אט (דיסקורד פותח את זה בנגן מלא)
+            await ctx.send(f"🔥 **{title}**\n{video_url}")
         except Exception as e:
-            await ctx.send(f"❌ תקלה במשיכת הוידאו. שגיאה: {str(e)}")
+            await ctx.send(f"❌ תקלה במשיכת המדיה מ-Reddit. שגיאה: {str(e)}")
 
 client.run(token)
