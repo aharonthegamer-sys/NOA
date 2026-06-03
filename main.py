@@ -81,23 +81,28 @@ async def meme(ctx):
     await ctx.send(embed=embed)                            
                             
 #nsfw command
-@client.command()
-@commands.cooldown(1, 10, commands.BucketType.channel)
-async def nsfw(ctx):
-  if ctx.channel.is_nsfw():
-     print("nsfw work!!")
-  else:
-    print("You can use this command in a nsfw channel only !")                            
-                            
-                            
-#ping command                            
-@client.command()
-@commands.cooldown(1, 10, commands.BucketType.channel) # it is used for the cooldown to prevent the bot from spam attack                            
-async def ping(ctx):
-    await ctx.send('Ping! **{0}**ms'.format(round(client.latency, 1)))
-                            
-                      
-client.run(token)    
-                            
-                            
-                            
+@client.command(name="nsfw")
+async def nsfw(ctx, category: str = None):
+    if not ctx.channel.is_nsfw():
+        await ctx.send("❌ ניתן להשתמש בפקודה זו רק בערוצים המסומנים כ-NSFW!")
+        return
+
+    valid_categories = ["anal", "blowjob", "cum", "fuck", "neko", "pussylick", "threesome_fff", "solo", "yaoi", "threesome_mmf", "yuri"]
+
+    if category not in valid_categories:
+        await ctx.send(f"❌ בחר קטגוריה תקינה מהרשימה: {', '.join(valid_categories)}")
+        return
+
+    url = f"https://purrbot.site{category}/gif"
+    
+    try:
+        response = requests.get(url).json()
+        image_url = response.get("link")
+        
+        embed = discord.Embed(title=f"🔥 קטגוריית NOA: {category.upper()}", color=0xff0055)
+        embed.set_image(url=image_url)
+        await ctx.send(embed=embed)
+    except:
+        await ctx.send("❌ תקלה במשיכת המדיה מהאתר, נסה שוב.")
+
+client.run(token)
