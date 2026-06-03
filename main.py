@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import requests
 
-token = YOUR_BOT_PREFIX_HERE
+token = "?"
 prefix = YOUR_BOT_TOKEN_HERE
 
 client = commands.Bot(command_prefix= prefix)
