@@ -107,32 +107,31 @@ async def nsfw(ctx, category: str = None):
         await ctx.send(f"❌ תקלה: {str(e)}")
 
  
-    @client.command(name="real")
+        @client.command(name="real")
     async def real(ctx):
         if not ctx.channel.is_nsfw():
             await ctx.send("❌ ניתן להשתמש בפקודה זו רק בערוצים המסומנים כ-NSFW!")
             return
 
-        # פנייה לאתר Scrolller למשיכת סרטונים ותמונות של נשים אמיתיות
-        url = "https://scrolller.com"
-        payload = {
-            "query": "query { getSubredditSubmissions(subreddit: \"nsfw\", limit: 1, iterator: null) { children { url title isVideo } } }"
-        }
+        # שליחת בקשה ישירה לאתר RedGIFs לקבלת סרטון אמיתי אקראי
+        url = "https://redgifs.com"
+        headers = {"User-Agent": "Mozilla/5.0"}
         
         try:
-            response = requests.post(url, json=payload).json()
-            submissions = response.get("data", {}).get("getSubredditSubmissions", {}).get("children", [])
+            response = requests.get(url, headers=headers).json()
+            gifs = response.get("gifs", [])
             
-            if not submissions:
-                await ctx.send("❌ לא נמצאה מדיה, נסה שוב.")
+            if not gifs:
+                await ctx.send("❌ לא נמצאו סרטונים כרגע, נסה שוב.")
                 return
                 
-            media_url = submissions[0].get("url")
+            # שליפת הקישור של הוידאו המלא והאיכותי
+            video_id = gifs[0].get("id")
+            video_url = f"https://redgifs.com{video_id}"
             
-            embed = discord.Embed(title="🔥 NOA REAL REALITY 🔥", color=0xff0055)
-            embed.set_image(url=media_url)
-            await ctx.send(embed=embed)
+            # שליחת הקישור ישירות לצ'אט (דיסקורד יפתח אוטומטית נגן וידאו מלא)
+            await ctx.send(f"🔥 **סרטון אמיתי (IRL) מבית NOA:**\n{video_url}")
         except Exception as e:
-            await ctx.send(f"❌ תקלה במשיכת המדיה האמיתית. שגיאה: {str(e)}")
+            await ctx.send(f"❌ תקלה במשיכת הוידאו האמיתי. שגיאה: {str(e)}")
 
 client.run(token)
