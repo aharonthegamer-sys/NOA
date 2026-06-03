@@ -113,25 +113,32 @@ async def nsfw(ctx, category: str = None):
             await ctx.send("❌ ניתן להשתמש בפקודה זו רק בערוצים המסומנים כ-NSFW!")
             return
 
-        # שליחת בקשה ישירה לאתר RedGIFs לקבלת סרטון אמיתי אקראי
-        url = "https://redgifs.com"
-        headers = {"User-Agent": "Mozilla/5.0"}
-        
         try:
-            response = requests.get(url, headers=headers).json()
+            # שלב 1: משיכת מפתח גישה זמני (Token) מהאתר
+            token_url = "https://redgifs.com"
+            token_res = requests.get(token_url).json()
+            access_token = token_res.get("token")
+            
+            # שלב 2: חיפוש סרטון אמיתי מלא באמצעות המפתח שקיבלנו
+            search_url = "https://redgifs.com"
+            headers = {
+                "User-Agent": "Mozilla/5.0",
+                "Authorization": f"Bearer {access_token}"
+            }
+            
+            response = requests.get(search_url, headers=headers).json()
             gifs = response.get("gifs", [])
             
             if not gifs:
                 await ctx.send("❌ לא נמצאו סרטונים כרגע, נסה שוב.")
                 return
                 
-            # שליפת הקישור של הוידאו המלא והאיכותי
+            # שלב 3: שליפת מזהה הוידאו ובניית קישור לנגן מלא
             video_id = gifs[0].get("id")
-            video_url = f"https://redgifs.com{video_id}"
+            video_url = f"https://www.redgifs.com/watch/{video_id}"
             
-            # שליחת הקישור ישירות לצ'אט (דיסקורד יפתח אוטומטית נגן וידאו מלא)
-            await ctx.send(f"🔥 **סרטון אמיתי (IRL) מבית NOA:**\n{video_url}")
+            await ctx.send(f"🔥 **סרטון אמיתי (IRL) מלא מבית NOA:**\n{video_url}")
         except Exception as e:
-            await ctx.send(f"❌ תקלה במשיכת הוידאו האמיתי. שגיאה: {str(e)}")
+            await ctx.send(f"❌ תקלה במשיכת הוידאו. שגיאה: {str(e)}")
 
 client.run(token)
