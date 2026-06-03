@@ -107,7 +107,7 @@ async def nsfw(ctx, category: str = None):
         await ctx.send(f"❌ תקלה: {str(e)}")
 
  
-        @client.command(name="real")
+    @client.command(name="real")
     async def real(ctx):
         if not ctx.channel.is_nsfw():
             await ctx.send("❌ ניתן להשתמש בפקודה זו רק בערוצים המסומנים כ-NSFW!")
