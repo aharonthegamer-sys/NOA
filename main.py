@@ -96,7 +96,7 @@ async def nsfw(ctx, category: str = None):
 url = f"https://purrbot.site/api/img/nsfw/{category}/gif"
 headers = {"User-Agent": "Mozilla/5.0"}
     
-    try:
+try:
         response = requests.get(url, headers=headers).json()
         image_url = response.get("link")
         
