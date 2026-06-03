@@ -102,7 +102,7 @@ try:
         
         embed = discord.Embed(title=f"🔥 קטגוריית NOA: {category.upper()}", color=0xff0055)
         embed.set_image(url=image_url)
-await ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 except Exception as e:
         await ctx.send(f"❌ תקלה במשיכת המדיה. שגיאה: {str(e)}")
 
