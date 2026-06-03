@@ -696,8 +696,8 @@ def main():
 if __name__ == "__main__":
     main()
 EOF
-msg_pass "yui_bot.py written."
-
+msg_pass = "yui_bot.py written."
+msg_info = "Running final checks..."
 # --- Final Diagnostics ---
 msg_info "Running final checks..."
 FINAL_CHECK_FAIL=0
