@@ -93,7 +93,7 @@ async def nsfw(ctx, category: str = None):
         await ctx.send(f"❌ בחר קטגוריה תקינה מהרשימה: {', '.join(valid_categories)}")
         return
 
-    url = f"https://purrbot.site{category}/gif"
+    url = f"https://purrbot.site/{category}/gif"
     headers = {"User-Agent": "Mozilla/5.0"}
     
     try:
