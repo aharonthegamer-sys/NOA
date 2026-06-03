@@ -2,6 +2,15 @@ import discord
 from discord.ext import commands
 import requests
 import os
+from flask import Flask
+from threading import Thread
+app = Flask('')
+@app.route('/')
+def home(): return "Bot is alive!"
+def run_flask(): app.run(host='0.0.0.0', port=10000)
+t = Thread(target=run_flask)
+t.daemon = True
+t.start()
 
 token = os.getenv("DISCORD_TOKEN")
 prefix = "?"
