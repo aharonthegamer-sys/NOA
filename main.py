@@ -107,5 +107,32 @@ async def nsfw(ctx, category: str = None):
         await ctx.send(f"❌ תקלה: {str(e)}")
 
  
+    @client.command(name="real")
+    async def real(ctx):
+        if not ctx.channel.is_nsfw():
+            await ctx.send("❌ ניתן להשתמש בפקודה זו רק בערוצים המסומנים כ-NSFW!")
+            return
+
+        # פנייה לאתר Scrolller למשיכת סרטונים ותמונות של נשים אמיתיות
+        url = "https://scrolller.com"
+        payload = {
+            "query": "query { getSubredditSubmissions(subreddit: \"nsfw\", limit: 1, iterator: null) { children { url title isVideo } } }"
+        }
+        
+        try:
+            response = requests.post(url, json=payload).json()
+            submissions = response.get("data", {}).get("getSubredditSubmissions", {}).get("children", [])
+            
+            if not submissions:
+                await ctx.send("❌ לא נמצאה מדיה, נסה שוב.")
+                return
+                
+            media_url = submissions[0].get("url")
+            
+            embed = discord.Embed(title="🔥 NOA REAL REALITY 🔥", color=0xff0055)
+            embed.set_image(url=media_url)
+            await ctx.send(embed=embed)
+        except Exception as e:
+            await ctx.send(f"❌ תקלה במשיכת המדיה האמיתית. שגיאה: {str(e)}")
 
 client.run(token)
