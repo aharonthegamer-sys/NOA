@@ -1,141 +1,136 @@
-import discord
-from discord.ext import commands, tasks
-import aiohttp
 import os
 import random
+import logging
 import threading
+import aiohttp
+import discord
+from discord.ext import commands, tasks
 from flask import Flask
 
-# ── Flask keep-alive (required for Render free tier) ────────────────────────
-app = Flask(__name__)
+# --- הגדרת מערכת לוגים בסיסית ---
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("DiscordBot")
 
-@app.route("/")
+# --- הגדרת שרת Flask עבור פלטפורמת Render ---
+app = Flask('')
+
+@app.route('/')
 def home():
-    return "Bot is running!", 200
+    return "Bot is running and healthy!"
 
 def run_flask():
-    app.run(host="0.0.0.0", port=10000)
+    # שרת רץ על פורט 10000 קבוע כדי לעבור את בדיקת הפורטים של רנדר
+    app.run(host='0.0.0.0', port=10000)
 
-threading.Thread(target=run_flask, daemon=True).start()
+# הפעלת שרת האינטרנט ברקע באמצעות תהליכון נפרד (Thread)
+flask_thread = threading.Thread(target=run_flask)
+flask_thread.daemon = True
+flask_thread.start()
 
-# ── Bot setup ────────────────────────────────────────────────────────────────
+# --- הגדרת הבוט של דיסקורד ---
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="?", intents=intents)
 
-# Replace with your chosen SFW subreddits
-SUBREDDITS = ["pics", "EarthPorn", "itookapicture", "photographs"]
+# רשימת הקהילות עבור הפיד האוטומטי
+SUBREDDITS = ["nsfw", "RealGirls", "NSFW_GIF", "holdthemoan"]
 
-# ── Background task ──────────────────────────────────────────────────────────
-@tasks.loop(minutes=10)
-async def auto_feed():
-    subreddit = random.choice(SUBREDDITS)
-    # Exact URL string as requested — append subreddit path at runtime
-    base_url = "https://reddit.com"
-    url = f"{base_url}/r/{subreddit}/random.json"
-    headers = {"User-Agent": "DiscordBot/1.0"}
+# רשימת הקטגוריות המורשות עבור פקודת האנימה
+ALLOWED_CATEGORIES = [
+    "anal", "blowjob", "cum", "fuck", "neko", "pussylick", 
+    "threesome_fff", "solo", "yaoi", "threesome_mmf", "yuri"
+]
 
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, headers=headers, allow_redirects=True) as resp:
-                if resp.status != 200:
-                    return
-                data = await resp.json()
-
-        post = data[0]["data"]["children"][0]["data"]
-        post_url = post.get("url", "")
-
-        if not any(post_url.lower().endswith(ext) for ext in (".jpg", ".jpeg", ".png", ".gif", ".mp4")):
-            return
-
-        for guild in bot.guilds:
-            channel = discord.utils.get(guild.text_channels, name="videos")
-            if channel and channel.permissions_for(guild.me).send_messages:
-                await channel.send(post_url)
-                break
-
-    except Exception as e:
-        print(f"[auto_feed error] {e}")
-
-@auto_feed.before_loop
-async def before_feed():
-    await bot.wait_until_ready()
-
-# ── Events ───────────────────────────────────────────────────────────────────
 @bot.event
 async def on_ready():
-    print(f"Logged in as {bot.user} (ID: {bot.user.id})")
-    auto_feed.start()
+    logger.info(f"Logged in successfully as {bot.user.name} (ID: {bot.user.id})")
+    # הפעלת משימת הרקע המחזורית מיד כשהבוט מתחבר
+    if not auto_feed.is_running():
+        auto_feed.start()
 
-# ── ?nsfw command ─────────────────────────────────────────────────────────────
-# Allowed SFW categories from purrbot.site — swap path prefix to /api/img/sfw
-ALLOWED_CATEGORIES = ["anal", "blowjob", "cum", "fuck", "neko", "pussylick", "threesome_fff", "solo", "yaoi", "threesome_mmf", "yuri"]
+# --- פיצ'ר 1: משימת רקע אוטומטית (רצה כל 10 דקות) ---
+@tasks.loop(minutes=10)
+async def auto_feed():
+    chosen_sub = random.choice(SUBREDDITS)
+    logger.info(f"Starting auto-feed pull from subreddit: r/{chosen_sub}")
+    
+    # הגדרת כותרות דפדפן כדי ש-Reddit לא יחסום את הבקשה
+    headers = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
+    url = f"https://reddit.com{chosen_sub}/random.json"
+    
+    for guild in bot.guilds:
+        # מחפש אוטומטית ערוץ בשם "videos" בשרת
+        channel = discord.utils.get(guild.text_channels, name="videos")
+        
+        # בודק שהערוץ קיים ומסומן כערוץ למבוגרים (NSFW)
+        if channel and channel.is_nsfw():
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, headers=headers) as response:
+                        if response.status == 200:
+                            data = await response.json()
+                            
+                            # ניתוח מבנה ה-JSON: Reddit מחזיר רשימה במקרה של פוסט אקראי
+                            if isinstance(data, list) and len(data) > 0:
+                                post_data = data[0]["data"]["children"][0]["data"]
+                            elif isinstance(data, dict) and "data" in data:
+                                post_data = data["data"]["children"][0]["data"]
+                            else:
+                                logger.warning(f"Unexpected JSON structure from Reddit API: {type(data)}")
+                                continue
+                            
+                            media_url = post_data.get("url")
+                            title = post_data.get("title", "Automatic Update")
+                            
+                            if media_url:
+                                # שליחת הקישור הישיר של המדיה לערוץ הדיסקורד
+                                await channel.send(f"🔥 **[r/{chosen_sub}] {title}**\n{media_url}")
+                                logger.info(f"Successfully sent media from r/{chosen_sub} to channel #{channel.name}")
+                        else:
+                            logger.error(f"Reddit API returned status code: {response.status}")
+            except Exception as e:
+                print(f"[auto_feed error] Failed to process media pull: {e}")
 
+# --- פיצ'ר 2: פקודת אנימה ידנית משולבת אימות קטגוריות ---
 @bot.command(name="nsfw")
 async def nsfw_cmd(ctx, category: str = "blowjob"):
+    # אבטחה: מניעת הרצת הפקודה בערוצים רגילים
     if not ctx.channel.is_nsfw():
         await ctx.send("❌ ניתן להשתמש בפקודה זו רק בערוצים המסומנים כ-NSFW!")
         return
         
+    category = category.lower()
     if category not in ALLOWED_CATEGORIES:
-        await ctx.send(f"❌ בחר קטגוריה תקינה: {', '.join(ALLOWED_CATEGORIES)}")
+        await ctx.send(f"❌ קטגוריה לא תקינה. בחר מהרשימה: {', '.join(ALLOWED_CATEGORIES)}")
         return
         
     url = f"https://purrbot.site{category}/gif"
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            if response.status == 200:
-                data = await response.json()
-                embed = discord.Embed(title=f"🔥 קטגוריית NOA: {category.upper()}", color=0xff0055)
-                embed.set_image(url=data.get("link"))
+    
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    media_link = data.get("link")
+                    
+                    if media_link:
+                        # יצירת כרטיסייה מעוצבת (Embed) להצגת ה-GIF
+                        embed = discord.Embed(
+                            title=f"🔥 קטגוריית NOA: {category.upper()}", 
+                            color=0xff0055
+                        )
+                        embed.set_image(url=media_link)
+                        await ctx.send(embed=embed)
+                    else:
+                        await ctx.send("❌ לא נמצא קישור תקין למדיה בתוך תשובת השרת.")
+                else:
+                    await ctx.send(f"❌ תקלה בתקשורת עם שרת המדיה (סטטוס: {response.status}).")
+    except Exception as e:
+        await ctx.send(f"❌ שגיאה בהרצת הפקודה.")
+        print(f"[nsfw_cmd error] Exception triggered: {e}")
 
-        await ctx.send(
-            f"Unknown category. Available:\n`{'`, `'.join(ALLOWED_CATEGORIES)}`"
-        )
-        return
-
-    # Exact URL pattern as requested
-    api_url = f"https://purrbot.site{category}/gif"
-
-    async with ctx.typing():
-        try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(api_url) as resp:
-                    if resp.status != 200:
-                        await ctx.send(f"API returned status {resp.status}.")
-                        return
-                    data = await resp.json()
-
-            gif_url = data.get("link", "")
-            if not gif_url:
-                await ctx.send("No gif returned from the API.")
-                return
-
-            embed = discord.Embed(
-                title=category.split("/")[-2],  # e.g. "neko"
-                color=discord.Color.purple()
-            )
-            embed.set_image(url=gif_url)
-            embed.set_footer(
-                text=f"purrbot.site • requested by {ctx.author.display_name}"
-            )
-            await ctx.send(embed=embed)
-
-        except Exception as e:
-            await ctx.send(f"Something went wrong: `{e}`")
-
-# ── Error handler ─────────────────────────────────────────────────────────────
-@bot.event
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.MissingRequiredArgument):
-        await ctx.send(f"Missing argument. See `?help {ctx.command}`.")
-    elif isinstance(error, commands.CommandNotFound):
-        pass
-    else:
-        print(f"[command error] {error}")
-
-# ── Run ───────────────────────────────────────────────────────────────────────
-TOKEN = os.getenv("DISCORD_TOKEN")
-if not TOKEN:
-    raise RuntimeError("DISCORD_TOKEN environment variable is not set.")
-
-bot.run(TOKEN)
+# --- הרצת הבוט באמצעות הטוקן המאובטח ---
+token = os.getenv("DISCORD_TOKEN")
+if token:
+    bot.run(token)
+else:
+    logger.critical("DISCORD_TOKEN variable is missing from environmental variables!")
