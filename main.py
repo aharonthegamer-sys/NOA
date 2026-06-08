@@ -68,20 +68,26 @@ async def on_ready():
 
 # ── ?nsfw command ─────────────────────────────────────────────────────────────
 # Allowed SFW categories from purrbot.site — swap path prefix to /api/img/sfw
-ALLOWED_CATEGORIES = [
-    "/api/img/sfw/neko", "/api/img/sfw/pat", "/api/img/sfw/hug",
-    "/api/img/sfw/kiss", "/api/img/sfw/blush", "/api/img/sfw/cry",
-    "/api/img/sfw/dance", "/api/img/sfw/poke", "/api/img/sfw/smile",
-]
+ALLOWED_CATEGORIES = ["anal", "blowjob", "cum", "fuck", "neko", "pussylick", "threesome_fff", "solo", "yaoi", "threesome_mmf", "yuri"]
 
 @bot.command(name="nsfw")
-async def nsfw_cmd(ctx, category: str = "/api/img/sfw/neko"):
-    """
-    Fetches a gif from purrbot.site.
-    Usage: ?nsfw <category_path>
-    Example: ?nsfw /api/img/sfw/neko
-    """
+async def nsfw_cmd(ctx, category: str = "blowjob"):
+    if not ctx.channel.is_nsfw():
+        await ctx.send("❌ ניתן להשתמש בפקודה זו רק בערוצים המסומנים כ-NSFW!")
+        return
+        
     if category not in ALLOWED_CATEGORIES:
+        await ctx.send(f"❌ בחר קטגוריה תקינה: {', '.join(ALLOWED_CATEGORIES)}")
+        return
+        
+    url = f"https://purrbot.site{category}/gif"
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            if response.status == 200:
+                data = await response.json()
+                embed = discord.Embed(title=f"🔥 קטגוריית NOA: {category.upper()}", color=0xff0055)
+                embed.set_image(url=data.get("link"))
+
         await ctx.send(
             f"Unknown category. Available:\n`{'`, `'.join(ALLOWED_CATEGORIES)}`"
         )
