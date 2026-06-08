@@ -1,120 +1,135 @@
 import discord
-from discord.ext import commands
-import requests
+from discord.ext import commands, tasks
+import aiohttp
 import os
+import random
+import threading
 from flask import Flask
-from threading import Thread
-app = Flask('')
-@app.route('/')
-def home(): return "Bot is alive!"
-def run_flask(): app.run(host='0.0.0.0', port=10000)
-t = Thread(target=run_flask)
-t.daemon = True
-t.start()
 
-token = os.getenv("DISCORD_TOKEN")
-prefix = "?"
+# ── Flask keep-alive (required for Render free tier) ────────────────────────
+app = Flask(__name__)
+
+@app.route("/")
+def home():
+    return "Bot is running!", 200
+
+def run_flask():
+    app.run(host="0.0.0.0", port=10000)
+
+threading.Thread(target=run_flask, daemon=True).start()
+
+# ── Bot setup ────────────────────────────────────────────────────────────────
 intents = discord.Intents.all()
-client = commands.Bot(command_prefix=prefix, intents=intents)
+bot = commands.Bot(command_prefix="?", intents=intents)
 
-client.remove_command("help") #to remove the default boring help command
+# Replace with your chosen SFW subreddits
+SUBREDDITS = ["pics", "EarthPorn", "itookapicture", "photographs"]
 
+# ── Background task ──────────────────────────────────────────────────────────
+@tasks.loop(minutes=10)
+async def auto_feed():
+    subreddit = random.choice(SUBREDDITS)
+    # Exact URL string as requested — append subreddit path at runtime
+    base_url = "https://reddit.com"
+    url = f"{base_url}/r/{subreddit}/random.json"
+    headers = {"User-Agent": "DiscordBot/1.0"}
 
-@client.event
-async def on_ready():
-    print("We have logged in as {0.user} ".format(client)) 
-    activity = discord.Game(name=".help", type=3)               # this is to writing prefix in playing a game.(optional)
-    await client.change_presence(status=discord.Status.online, activity=activity) # this is for making the status as an online and writing prefix in playing a game.(optional)  
-                            
-                            
-                            
-                            
-#Help commands
-@client.group(invoke_without_command=True)
-async def help(ctx):
-    embed = discord.Embed(title="IndianDesiMemer Help Center ✨",color=0xF49726)
-    embed.add_field(name="Command Categories :",value="🐸 `memes    :` Image generation with a memey twist.\n" + "🔧 `utility  :` Bot utility zone\n😏 `nsfw     :` Image generation with a memey twist.\n\nTo view the commands of a category, send `.help <category>`" ,inline=False)
-    embed.set_footer(icon_url=ctx.author.avatar_url,text="Help requested by: {}".format(ctx.author.display_name))
-    await ctx.send(embed=embed)
-                            
-
-#Sub-help command of memes
-@help.command ()
-async def memes(ctx):
-    embed=discord.Embed(title="IndianDesiMemer Help Center ✨", description="Commands of **meme** \n`.meme:`Memes",inline=False)
-    embed.set_footer(icon_url=ctx.author.avatar_url,text="Command requested by: {}".format(ctx.author.display_name))
-    await ctx.send(embed=embed)
-                            
-
-#Sub-help commands of nsfw                           
-@help.command ()
-async def nsfw(ctx) :
-    embed=discord.Embed(title="IndianDesiMemer Help Center ✨", description="Commands of **nsfw** \n`.nsfw:`NSFW", color=0xF49726)
-    embed.set_footer(icon_url=ctx.author.avatar_url,text="Command requested by: {}".format(ctx.author.display_name))
-    await ctx.send(embed=embed)
-
-
-#Sub-help commands of utility                           
-@help.command ()
-async def utility(ctx) :
-    embed=discord.Embed(title="IndianDesiMemer Help Center ✨", description="Commands of **utility** \n`.ping:`Latency", color=0xF49726)
-    embed.set_footer(icon_url=ctx.author.avatar_url,text="Command requested by: {}".format(ctx.author.display_name))
-    await ctx.send(embed=embed)                            
-
-
-# it is used for the cooldown to prevent the bot from spam attack                             
-@client.event
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.CommandOnCooldown):
-        await ctx.send("**Try after {0} second ".format(round(error.retry_after, 2)))                            
-                            
-                            
-#meme command                            
-@client.command()
-@commands.cooldown(1, 10, commands.BucketType.channel) # it is used for the cooldown to prevent the bot from spam attack                            
-async def meme(ctx):
-    
-    response = requests.get("https://meme-api.herokuapp.com/gimme/"+"memes"+"memes"+"?t=all?hot")
-    
-    m = response.json()
-    postLink = (m["postLink"])
-    subreddit = (m["subreddit"])
-    title = (m["title"])
-    imageUrl =  (m["url"])
-    upVote = (m["ups"])
-    uv = str(upVote)
-
-    embed=discord.Embed(title= title, url=postLink,color=0xF49726)
-    embed.set_image(url=imageUrl)
-    embed.set_footer(text="\n👍\t"+ uv+ "  By :r/"+subreddit)
-    await ctx.send(embed=embed)                            
-                            
-#nsfw command
-@client.command(name="nsfw")
-async def nsfw(ctx, category: str = None):
-    if not ctx.channel.is_nsfw():
-        await ctx.send("❌ ניתן להשתמש בפקודה זו רק בערוצים המסומנים כ-NSFW!")
-        return
-
-    valid_categories = ["anal", "blowjob", "cum", "fuck", "neko", "pussylick", "threesome_fff", "solo", "yaoi", "threesome_mmf", "yuri"]
-
-    if category not in valid_categories:
-        await ctx.send(f"❌ בחר קטגוריה תקינה מהרשימה: {', '.join(valid_categories)}")
-        return
-
-    url = f"https://purrbot.site/api/img/nsfw/{category}/gif"
-    headers = {"User-Agent": "Mozilla/5.0"}
-    
     try:
-        response = requests.get(url, headers=headers).json()
-        image_url = response.get("link")
-        
-        embed = discord.Embed(title=f"🔥 קטגוריית NOA: {category.upper()}", color=0xff0055)
-        embed.set_image(url=image_url)
-        await ctx.send(embed=embed)
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, headers=headers, allow_redirects=True) as resp:
+                if resp.status != 200:
+                    return
+                data = await resp.json()
+
+        post = data[0]["data"]["children"][0]["data"]
+        post_url = post.get("url", "")
+
+        if not any(post_url.lower().endswith(ext) for ext in (".jpg", ".jpeg", ".png", ".gif", ".mp4")):
+            return
+
+        for guild in bot.guilds:
+            channel = discord.utils.get(guild.text_channels, name="videos")
+            if channel and channel.permissions_for(guild.me).send_messages:
+                await channel.send(post_url)
+                break
+
     except Exception as e:
-        await ctx.send(f"❌ תקלה: {str(e)}")
+        print(f"[auto_feed error] {e}")
 
- 
+@auto_feed.before_loop
+async def before_feed():
+    await bot.wait_until_ready()
 
-client.run(token)
+# ── Events ───────────────────────────────────────────────────────────────────
+@bot.event
+async def on_ready():
+    print(f"Logged in as {bot.user} (ID: {bot.user.id})")
+    auto_feed.start()
+
+# ── ?nsfw command ─────────────────────────────────────────────────────────────
+# Allowed SFW categories from purrbot.site — swap path prefix to /api/img/sfw
+ALLOWED_CATEGORIES = [
+    "/api/img/sfw/neko", "/api/img/sfw/pat", "/api/img/sfw/hug",
+    "/api/img/sfw/kiss", "/api/img/sfw/blush", "/api/img/sfw/cry",
+    "/api/img/sfw/dance", "/api/img/sfw/poke", "/api/img/sfw/smile",
+]
+
+@bot.command(name="nsfw")
+async def nsfw_cmd(ctx, category: str = "/api/img/sfw/neko"):
+    """
+    Fetches a gif from purrbot.site.
+    Usage: ?nsfw <category_path>
+    Example: ?nsfw /api/img/sfw/neko
+    """
+    if category not in ALLOWED_CATEGORIES:
+        await ctx.send(
+            f"Unknown category. Available:\n`{'`, `'.join(ALLOWED_CATEGORIES)}`"
+        )
+        return
+
+    # Exact URL pattern as requested
+    api_url = f"https://purrbot.site{category}/gif"
+
+    async with ctx.typing():
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(api_url) as resp:
+                    if resp.status != 200:
+                        await ctx.send(f"API returned status {resp.status}.")
+                        return
+                    data = await resp.json()
+
+            gif_url = data.get("link", "")
+            if not gif_url:
+                await ctx.send("No gif returned from the API.")
+                return
+
+            embed = discord.Embed(
+                title=category.split("/")[-2],  # e.g. "neko"
+                color=discord.Color.purple()
+            )
+            embed.set_image(url=gif_url)
+            embed.set_footer(
+                text=f"purrbot.site • requested by {ctx.author.display_name}"
+            )
+            await ctx.send(embed=embed)
+
+        except Exception as e:
+            await ctx.send(f"Something went wrong: `{e}`")
+
+# ── Error handler ─────────────────────────────────────────────────────────────
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.MissingRequiredArgument):
+        await ctx.send(f"Missing argument. See `?help {ctx.command}`.")
+    elif isinstance(error, commands.CommandNotFound):
+        pass
+    else:
+        print(f"[command error] {error}")
+
+# ── Run ───────────────────────────────────────────────────────────────────────
+TOKEN = os.getenv("DISCORD_TOKEN")
+if not TOKEN:
+    raise RuntimeError("DISCORD_TOKEN environment variable is not set.")
+
+bot.run(TOKEN)
