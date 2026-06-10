@@ -1,6 +1,7 @@
 import discord
 from discord.ext import commands
 import asyncio
+import os  # ספרייה לקריאת משתני סביבה מהשרת של Render
 
 # 1. הגדרת הרשאות הבוט (חובה להדליק את ה-Intents באתר של דיסקורד!)
 intents = discord.Intents.default()
@@ -63,5 +64,6 @@ async def execute_purge(ctx):
 
     print(f"✅ התהליך הסתיים: השרת רוקן והבוט התנתק.")
 
-# תכניס כאן את הטוקן של הבוט שלך מאתר דיסקורד
-bot.run("YOUR_DISCORD_BOT_TOKEN")
+# קריאת הטוקן באופן מאובטח מתוך הגדרות ה-Environment ב-Render
+TOKEN = os.getenv("DISCORD_TOKEN")
+bot.run(TOKEN)
